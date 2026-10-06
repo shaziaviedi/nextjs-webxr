@@ -1,5 +1,3 @@
-// One layer of a celestial body: a solid form, a see-through skin, or a wireframe cage.
-
 import * as THREE from 'three';
 import { ShellConfig } from '../../../types/field';
 
@@ -17,8 +15,7 @@ export function BodyShell({
 }: ShellConfig) {
   const isTransparent = opacity < 1;
 
-  // Big spheres need more segments to look smooth up close; small ones can use
-  // fewer, which keeps the frame rate up in XR.
+  // only big spheres need the extra segments
   const segments = radius > 1.5 ? 48 : 32;
 
   return (
@@ -30,7 +27,6 @@ export function BodyShell({
       )}
 
       {wireframe ? (
-        // A basic material lets the wire lines glow softly without needing a light
         <meshBasicMaterial color={color} wireframe transparent={isTransparent} opacity={opacity} depthWrite={false} />
       ) : (
         <meshStandardMaterial

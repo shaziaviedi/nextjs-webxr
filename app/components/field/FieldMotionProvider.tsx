@@ -1,9 +1,5 @@
-// Connects the motion model (plain maths) to the 3D objects on screen.
-//
-// One model drives the whole scene. Each CelestialBody registers its group here,
-// and every frame the provider steps the model and copies the new positions onto
-// those groups. Running it all from one place keeps parents updated before the
-// bodies orbiting them, and gives a single spot to swap in a different model.
+// one model moves every body. bodies register their group here and
+// each frame we step the model and copy positions over
 
 import { createContext, RefObject, useCallback, useContext, useLayoutEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
@@ -11,8 +7,6 @@ import * as THREE from 'three';
 import { FieldMotionContextValue, FieldMotionProviderProps } from '../../types/field';
 import { createKinematicModel } from '../../simulation/kinematicModel';
 
-// Context shares a value with every component nested inside the provider,
-// without passing it down through each layer as a prop.
 const FieldMotionContext = createContext<FieldMotionContextValue | null>(null);
 
 export function FieldMotionProvider({ nodes, children }: FieldMotionProviderProps) {
@@ -44,12 +38,10 @@ export function FieldMotionProvider({ nodes, children }: FieldMotionProviderProp
   return <FieldMotionContext.Provider value={value}>{children}</FieldMotionContext.Provider>;
 }
 
-// Hands a body's group to the provider so it gets moved every frame.
 export function useFieldBody(id: string, ref: RefObject<THREE.Group | null>) {
   const context = useContext(FieldMotionContext);
 
-  // useLayoutEffect runs before the first frame is drawn, so the body never
-  // appears in the wrong place.
+  // layout effect so it's placed before the first frame draws
   useLayoutEffect(() => {
     if (!context || !ref.current) return;
     return context.registerBody(id, ref.current);

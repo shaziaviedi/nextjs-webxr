@@ -1,15 +1,10 @@
-// A small cloud of glowing dots that belongs to one body.
-// All the dots are drawn as a single Points object, which is far cheaper than
-// hundreds of separate meshes.
-
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { ParticleClusterConfig } from '../../../types/field';
 import { createSeededRandom } from '../../../utils/random';
 
-// Points are drawn as hard squares by default. This paints a soft white dot on a
-// small hidden canvas to use as the image for every point. It's made once and shared.
+// points render as squares by default, this soft dot texture fixes that. made once and shared
 let cachedDotTexture: THREE.CanvasTexture | null = null;
 
 function getDotTexture() {
@@ -44,15 +39,12 @@ export function ParticleCluster({
 }: ParticleClusterConfig) {
   const pointsRef = useRef<THREE.Points>(null);
 
-  // useMemo keeps the result between renders and only recalculates it when one of
-  // the listed values changes.
   const positions = useMemo(() => {
     const random = createSeededRandom(seed);
-    const array = new Float32Array(count * 3); // x, y, z for each dot
+    const array = new Float32Array(count * 3);
 
     for (let i = 0; i < count; i++) {
-      // A random direction, then a random distance along it. The power of 1.5
-      // makes the cloud denser towards the middle.
+      // pow 1.5 = denser towards the middle
       const theta = random() * Math.PI * 2;
       const phi = Math.acos(2 * random() - 1);
       const distance = innerRadius + (radius - innerRadius) * Math.pow(random(), 1.5);
@@ -78,7 +70,7 @@ export function ParticleCluster({
       <pointsMaterial
         color={color}
         size={size}
-        sizeAttenuation // further dots look smaller
+        sizeAttenuation
         map={dotTexture}
         transparent
         opacity={opacity}

@@ -1,6 +1,5 @@
-// A huge, slowly flowing loop of particles, like a visible line of the field.
-// Each particle only stores where it starts on the loop and how far it sits from
-// the centre line; the shader moves it around every frame.
+// big loop of flowing particles. each one just stores where it starts on the loop
+// + its offset from the centre line, the shader does the moving
 
 import { useMemo } from 'react';
 import * as THREE from 'three';
@@ -19,8 +18,7 @@ export function FieldStream({ config }: FieldStreamProps) {
     const progress = new Float32Array(count);
     const offsets = new Float32Array(count * 3);
 
-    // Adding three random numbers gives a rough bell curve between -1 and 1, so
-    // particles crowd the middle of the stream and thin out towards its edges.
+    // rough bell curve so the stream is thicker in the middle
     const bell = () => (random() + random() + random() - 1.5) / 1.5;
 
     for (let i = 0; i < count; i++) {
@@ -30,8 +28,7 @@ export function FieldStream({ config }: FieldStreamProps) {
       offsets[i * 3 + 2] = bell() * spread;
     }
 
-    // Three.js still expects a position for every point, even though the shader
-    // works out the real one, so these are left at zero.
+    // three still wants a position attribute, shader ignores it
     const positions = new Float32Array(count * 3);
 
     return { positions, progress, offsets, ...createParticleLook(config, count, random) };
@@ -47,7 +44,7 @@ export function FieldStream({ config }: FieldStreamProps) {
       uRotation: { value: rotation },
       uSpeed: { value: 1 / period },
       uWaveAmp: { value: waveAmplitude },
-      uWaveFreq: { value: Math.round(waveFrequency) }, // whole numbers keep the loop seamless
+      uWaveFreq: { value: Math.round(waveFrequency) },
       uClumping: { value: clumping },
     };
   }, [center, radii, tilt, period, waveAmplitude, waveFrequency, clumping]);

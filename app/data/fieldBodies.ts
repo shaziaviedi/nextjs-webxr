@@ -1,18 +1,5 @@
-// The celestial bodies in FIELD: how each one looks, how heavy it is, and how it moves.
-//
-// The visitor starts at [0, 0, 0] with their eyes about 1.6 m up. Negative z is in
-// front of them, positive z is behind. Distances are in metres, angles in radians.
-//
-// The bodies are grouped into small local systems spread around the space, each
-// moving at its own pace:
-//   Mass system     - the largest body with two slow moons (far ahead)
-//   Lantern binary  - two bodies circling a shared centre (front left)
-//   Violet system   - a particle cloud with a companion orbiting it (front right)
-//   Cage binary     - two equal bodies circling each other (behind)
-//   Low system      - a dark body with one quick little mote (behind right, below eye level)
-//   Drifters        - the Distant Veil and the Seed, which only wander slightly
-//
-// An orbit's "period" is how many seconds one full trip takes, so bigger means slower.
+// visitor at origin, eyes ~1.6m. -z is in front. metres + radians
+// period = secs per loop so bigger is slower
 
 import { CelestialBodyConfig, MotionNode } from '../types/field';
 import { createBinaryOrbits } from '../simulation/kinematicModel';
@@ -20,8 +7,7 @@ import { PALETTE } from './palette';
 
 const QUARTER_TURN = Math.PI / 2;
 
-// Each binary pair revolves around an invisible centre point. Nothing is drawn
-// there; the point just drifts a little so the pair wanders as one.
+// invisible centres for the binary pairs, they drift so the pair wanders together
 const ANCHORS: MotionNode[] = [
   {
     id: 'lantern-pair-centre',
@@ -35,8 +21,7 @@ const ANCHORS: MotionNode[] = [
   },
 ];
 
-// The masses are declared once so the orbits and the bodies always agree.
-// The heavier partner swings in the smaller circle.
+// masses up here so orbit + body use the same number
 const LANTERN_MASS = 3;
 const EMBER_MASS = 1.5;
 const [LANTERN_ORBIT, EMBER_ORBIT] = createBinaryOrbits({
@@ -55,20 +40,19 @@ const [CAGE_ORBIT, SHARD_ORBIT] = createBinaryOrbits({
   massA: CAGE_MASS,
   massB: SHARD_MASS,
   separation: 3.2,
-  period: -140, // negative, so this pair turns the opposite way to the Lantern pair
+    period: -140, // opposite way to lantern pair
   tilt: [0.2, 0, -0.35],
   phase: 1,
 });
 
 export const FIELD_BODIES: CelestialBodyConfig[] = [
-  // Mass system
+  // mass + 2 moons, far ahead
   {
-    // The heavy centre of the scene: a dark faceted form in a faint wireframe cage.
     id: 'mass',
     mass: 50,
     motion: { type: 'drift', home: [0, 3, -13], amplitude: [0.1, 0.15, 0.1], period: 80 },
     tilt: [0.25, 0, -0.18],
-    rotationSpeed: 0.015, // large bodies turn slowly so they feel heavy
+    rotationSpeed: 0.015, // slow = feels heavy
     shells: [
       {
         geometry: 'icosahedron',
@@ -94,7 +78,7 @@ export const FIELD_BODIES: CelestialBodyConfig[] = [
     ],
   },
   {
-    // Orbits in the same plane as the Mass's ring.
+    // same plane as the mass ring
     id: 'mass-moon-inner',
     mass: 0.5,
     motion: { type: 'orbit', parentId: 'mass', radius: 5.4, period: 150, tilt: [0.25, 0, -0.18] },
@@ -112,7 +96,6 @@ export const FIELD_BODIES: CelestialBodyConfig[] = [
     ],
   },
   {
-    // A translucent bubble on a wider, steeper, slightly oval orbit.
     id: 'mass-moon-outer',
     mass: 0.3,
     motion: {
@@ -130,9 +113,8 @@ export const FIELD_BODIES: CelestialBodyConfig[] = [
     ],
   },
 
-  // Lantern binary
+  // lantern binary, front left
   {
-    // A warm core inside translucent layers. Its light falls softly on nearby bodies.
     id: 'lantern',
     mass: LANTERN_MASS,
     motion: LANTERN_ORBIT,
@@ -158,9 +140,8 @@ export const FIELD_BODIES: CelestialBodyConfig[] = [
     ],
   },
 
-  // Violet system
+  // violet cloud + companion, front right
   {
-    // Barely solid: a tiny core and a wire cage dissolving into violet particles.
     id: 'violet-cloud',
     mass: 6,
     motion: { type: 'drift', home: [5.5, 3.6, -6.5], amplitude: [0.12, 0.2, 0.12], period: 45 },
@@ -201,7 +182,7 @@ export const FIELD_BODIES: CelestialBodyConfig[] = [
     ],
   },
 
-  // Cage binary: an open cage and a solid shard, a pair of opposites.
+  // cage binary, behind
   {
     id: 'cage',
     mass: CAGE_MASS,
@@ -235,7 +216,7 @@ export const FIELD_BODIES: CelestialBodyConfig[] = [
     ],
   },
 
-  // Low system: sits below eye level so the visitor has a reason to look down.
+  // below eye level so theres a reason to look down
   {
     id: 'low-body',
     mass: 8,
@@ -251,16 +232,15 @@ export const FIELD_BODIES: CelestialBodyConfig[] = [
     ],
   },
   {
-    // The fastest orbit in the scene, as a contrast to the slow body it circles.
+    // fastest orbit, contrast w/ the slow body
     id: 'mote',
     mass: 0.1,
     motion: { type: 'orbit', parentId: 'low-body', radius: 2.4, period: 40, tilt: [0.25, 0, 0.2], phase: 3 },
     core: { radius: 0.03, color: PALETTE.coolBlue, haloScale: 4, haloOpacity: 0.2, pulseSpeed: 1.4 },
   },
 
-  // Drifters
+  // drifters
   {
-    // Huge but almost invisible, high up and far away.
     id: 'distant-veil',
     mass: 20,
     motion: { type: 'drift', home: [-11, 8, -18], amplitude: [0.3, 0.4, 0.3], period: 120 },
@@ -274,7 +254,7 @@ export const FIELD_BODIES: CelestialBodyConfig[] = [
     ],
   },
   {
-    // The smallest body, hanging almost within reach.
+    // almost within reach
     id: 'seed',
     mass: 0.05,
     motion: { type: 'drift', home: [1.1, 1.9, -1.8], amplitude: [0.05, 0.04, 0.05], period: 30 },
@@ -293,5 +273,4 @@ export const FIELD_BODIES: CelestialBodyConfig[] = [
   },
 ];
 
-// Everything the motion model moves: the invisible anchors plus every body.
 export const MOTION_NODES: MotionNode[] = [...ANCHORS, ...FIELD_BODIES];

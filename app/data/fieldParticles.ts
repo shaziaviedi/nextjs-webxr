@@ -1,19 +1,12 @@
-// Settings for the particle field that fills the space around the bodies.
-//
-// Dust volumes scatter particles in every direction, gathered into loose clouds
-// with empty pockets between them. Streams are huge tilted loops of particles that
-// slowly flow around, like visible lines of the field.
-//
-// Particle sizes are in metres, so far-away groups use bigger particles to stay
-// visible. If the scene runs slowly on a headset, lower the counts first.
+// sizes are in metres so far groups need bigger particles.
+// if the headset lags, lower the counts first
 
 import { AmbientDustConfig, FieldStreamConfig } from '../types/field';
 import { PALETTE } from './palette';
 
 export const DUST_VOLUMES: AmbientDustConfig[] = [
   {
-    // Fine dust right around the visitor. The inner radius keeps a small
-    // empty bubble around their head.
+    // inner radius keeps it out of the visitors face
     id: 'near-dust',
     count: 1400,
     center: [0, 1.6, 0],
@@ -32,7 +25,6 @@ export const DUST_VOLUMES: AmbientDustConfig[] = [
     seed: 101,
   },
   {
-    // Dust reaching far into the distance, with more empty space between clouds.
     id: 'deep-dust',
     count: 2600,
     center: [0, 2, -4],
@@ -52,11 +44,10 @@ export const DUST_VOLUMES: AmbientDustConfig[] = [
   },
 ];
 
-// A loop takes several minutes, so the flow is noticeable without being busy.
-// Negative periods run backwards, which makes the currents cross each other.
+// negative period runs backwards so some currents cross
 export const FIELD_STREAMS: FieldStreamConfig[] = [
   {
-    // High overhead
+    // overhead
     id: 'great-arc',
     count: 1600,
     center: [0, 9, -4],
@@ -77,7 +68,7 @@ export const FIELD_STREAMS: FieldStreamConfig[] = [
     seed: 301,
   },
   {
-    // Beneath the visitor's feet
+    // under the floor
     id: 'undercurrent',
     count: 1200,
     center: [3, -5, 0],
@@ -100,8 +91,7 @@ export const FIELD_STREAMS: FieldStreamConfig[] = [
     seed: 302,
   },
   {
-    // A long, narrow current in front of the visitor at about eye height,
-    // passing between the Lantern pair and the Violet system
+    // eye height, between lantern pair and violet cloud
     id: 'crossing',
     count: 1300,
     center: [0, 2.5, -6],
@@ -124,8 +114,7 @@ export const FIELD_STREAMS: FieldStreamConfig[] = [
     seed: 303,
   },
   {
-    // A steep loop bending past the Mass. It's much wider than the body itself,
-    // so it reads as the field curving rather than something in orbit.
+    // way wider than the mass so it reads as the field bending, not an orbit
     id: 'mass-wake',
     count: 900,
     center: [0, 3, -13],
@@ -146,7 +135,7 @@ export const FIELD_STREAMS: FieldStreamConfig[] = [
     seed: 304,
   },
   {
-    // Nearly vertical, off to the left, rising high above and dipping far below
+    // almost vertical, left side
     id: 'standing-loop',
     count: 900,
     center: [-6, 2, 0],
@@ -167,7 +156,6 @@ export const FIELD_STREAMS: FieldStreamConfig[] = [
     seed: 305,
   },
   {
-    // Behind the visitor, past the Cage pair and the Low body
     id: 'rear-current',
     count: 1000,
     center: [2, 1.5, 6],
@@ -190,7 +178,6 @@ export const FIELD_STREAMS: FieldStreamConfig[] = [
     seed: 306,
   },
   {
-    // A faint, very slow formation deep in the distance
     id: 'far-current',
     count: 1200,
     center: [-12, 6, -20],

@@ -1,5 +1,3 @@
-// Every colour in FIELD comes from here, so the bodies and the particle field
-// always feel like they belong to the same world.
 export const PALETTE = {
   white: '#f2f4ff',
   coolBlue: '#8fb4ff',

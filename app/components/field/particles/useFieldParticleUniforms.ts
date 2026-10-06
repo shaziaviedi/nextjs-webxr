@@ -1,6 +1,3 @@
-// Creates the shader values every particle group needs, and keeps the time and
-// screen scale up to date each frame.
-
 import { useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -26,9 +23,7 @@ export function useFieldParticleUniforms(opacity: number, extraUniforms: Record<
   useFrame((state) => {
     uniforms.uTime.value = state.clock.elapsedTime;
 
-    // Half the screen height in pixels is the usual factor for turning metres into
-    // pixels. In a headset, Three.js resizes the drawing area to the headset's
-    // resolution, so reading it every frame keeps sizes right in both modes.
+    // read every frame bc the buffer size changes when entering the headset
     gl.getDrawingBufferSize(drawingBufferSize);
     uniforms.uScale.value = drawingBufferSize.y * 0.5;
   });

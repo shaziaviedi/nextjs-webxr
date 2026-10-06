@@ -1,6 +1,3 @@
-// Dust scattered through a large volume in every direction, gathered into loose
-// clouds with empty pockets between them so the space still feels open.
-
 import { useMemo } from 'react';
 import * as THREE from 'three';
 import { AmbientDustProps } from '../../../types/field';
@@ -9,8 +6,7 @@ import { createParticleLook } from '../../../utils/particleLook';
 import { dustVertexShader, particleFragmentShader } from './shaders';
 import { useFieldParticleUniforms } from './useFieldParticleUniforms';
 
-// A smooth wavy pattern through space, between -1 and 1. Low values become the
-// empty pockets, high values become the denser clouds.
+// wavy -1..1 pattern, low spots become the empty pockets
 function densityAt(x: number, y: number, z: number) {
   return (Math.sin(x * 0.13 + 0.7) + Math.sin(y * 0.21 + 1.3) + Math.sin(z * 0.11 + 2.1) + Math.sin((x + z) * 0.07)) / 4;
 }
@@ -25,22 +21,18 @@ export function AmbientDust({ config }: AmbientDustProps) {
 
     let placed = 0;
     let attempts = 0;
-    // Try random spots until enough particles are placed. The attempt limit just
-    // guarantees the loop ends even with extreme settings.
+    // attempt cap is just so it cant loop forever
     while (placed < count && attempts < count * 30) {
       attempts++;
 
       const theta = random() * Math.PI * 2;
       const phi = Math.acos(2 * random() - 1);
-      // The power of 1.6 puts more particles nearer the centre, so the foreground
-      // isn't empty while the dust still reaches far away.
       const distance = innerRadius + (outerRadius - innerRadius) * Math.pow(random(), 1.6);
 
       const x = centerX + distance * Math.sin(phi) * Math.cos(theta);
-      const y = centerY + distance * Math.cos(phi) * 0.6; // squashed so the space feels wide rather than tall
+      const y = centerY + distance * Math.cos(phi) * 0.6; // squashed, wide not tall
       const z = centerZ + distance * Math.sin(phi) * Math.sin(theta);
 
-      // Reject more candidates in low-density areas to leave negative space
       const cloudiness = THREE.MathUtils.smoothstep(densityAt(x, y, z), -0.45, 0.45);
       const keepChance = 1 - clumpiness * (1 - cloudiness);
       if (random() > keepChance) continue;
@@ -58,8 +50,7 @@ export function AmbientDust({ config }: AmbientDustProps) {
   const uniforms = useFieldParticleUniforms(opacity, extraUniforms);
 
   return (
-    // The shader moves particles away from where they started, so turn off
-    // frustum culling or Three.js may hide the group when it shouldn't.
+    // shader moves them off their start spot, culling would hide them wrongly
     <points frustumCulled={false}>
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[particles.positions, 3]} />

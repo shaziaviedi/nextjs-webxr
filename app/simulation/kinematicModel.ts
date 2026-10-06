@@ -1,18 +1,12 @@
-// Scripted motion for the celestial bodies. Positions come straight from maths
-// (circles and sine waves) rather than from forces like gravity, which is what
-// "kinematic" means.
-//
-// There's no React in this file. It follows the FieldMotionModel interface in
-// app/types/field.ts, so a real gravity simulation with the same step() and
-// getPosition() functions could be swapped in later.
+// scripted motion, not real gravity. positions just come from sin/cos.
+// follows FieldMotionModel so a proper gravity sim can replace it later
 
 import * as THREE from 'three';
 import { BinaryPairConfig, FieldMotionModel, MotionNode, OrbitMotion } from '../types/field';
 
 const TWO_PI = Math.PI * 2;
 
-// Turns an id like "lantern" into a fixed angle, so each drifting body starts
-// at a different point in its wander and they don't move in sync.
+// fixed angle per id so the drifters dont all move in sync
 function idToAngle(id: string) {
   let hash = 0;
   for (const character of id) {
@@ -21,9 +15,8 @@ function idToAngle(id: string) {
   return ((hash % 1000) / 1000) * TWO_PI;
 }
 
-// A body can only be placed once its parent has been placed, so this orders the
-// list with every parent ahead of the bodies that orbit it. It also catches a
-// misspelled parent id, or two bodies set to orbit each other.
+// parents have to be positioned before whatever orbits them.
+// also throws on typo'd parent ids or orbit loops
 function sortParentsFirst(nodes: MotionNode[]): MotionNode[] {
   const nodesById = new Map(nodes.map((node) => [node.id, node]));
   const sorted: MotionNode[] = [];
@@ -54,8 +47,7 @@ function sortParentsFirst(nodes: MotionNode[]): MotionNode[] {
   return sorted;
 }
 
-// Two bodies revolving around a shared centre, always on opposite sides.
-// Like real binary stars, the heavier one stays closer to the centre.
+// two bodies on opposite sides of a shared centre, heavier one gets the smaller circle
 export function createBinaryOrbits({
   anchorId,
   massA,
@@ -75,8 +67,7 @@ export function createBinaryOrbits({
 export function createKinematicModel(nodes: MotionNode[]): FieldMotionModel {
   const orderedNodes = sortParentsFirst(nodes);
 
-  // The same Vector3 objects are reused every frame. Creating new ones each frame
-  // leaves garbage for the browser to clean up, which can cause stutters in XR.
+  // reuse vectors every frame, new ones = garbage collection stutter in xr
   const positions = new Map<string, THREE.Vector3>();
   const orbitTilts = new Map<string, THREE.Quaternion>();
   const driftAngles = new Map<string, number>();
@@ -99,8 +90,7 @@ export function createKinematicModel(nodes: MotionNode[]): FieldMotionModel {
       const motion = node.motion;
 
       if (motion.type === 'drift') {
-        // One sine wave per axis, each at a slightly different speed. Because the
-        // speeds don't line up, the path never quite repeats and feels organic.
+        // diff speed per axis so the path never really repeats
         const [homeX, homeY, homeZ] = motion.home;
         const [ampX, ampY, ampZ] = motion.amplitude ?? [0.1, 0.1, 0.1];
         const speed = TWO_PI / (motion.period ?? 40);
@@ -117,19 +107,16 @@ export function createKinematicModel(nodes: MotionNode[]): FieldMotionModel {
         const longRadius = motion.radius;
         const shortRadius = longRadius * Math.sqrt(1 - eccentricity * eccentricity);
 
-        // A point on a flat oval. Subtracting the eccentricity puts the parent
-        // off-centre, the way real elliptical orbits work.
+        // "- eccentricity" puts the parent off centre like a real ellipse orbit
         offset.set(longRadius * (Math.cos(angle) - eccentricity), 0, shortRadius * Math.sin(angle));
         offset.applyQuaternion(orbitTilts.get(node.id)!);
 
-        // The parent was already updated this frame (see sortParentsFirst),
-        // so moons and binary partners follow their parent wherever it goes.
         position.copy(positions.get(motion.parentId)!).add(offset);
       }
     }
   };
 
-  // Work out the starting positions now so nothing flashes at [0, 0, 0].
+  // so nothing flashes at the origin on the first frame
   step(0);
 
   return {
